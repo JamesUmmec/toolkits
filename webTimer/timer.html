@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf8">
+        <title>Web Timer 1.2.1</title>
+        <script type="text/javascript">
+
+            var darkTheme = false;
+
+            var accumulation = 0;       // long, ms
+            var lastTime;               // long, ms
+            var running = false;        // boolean
+            var list = [];
+
+            window.onload = function(){
+                setInterval("nowTime()", 100);
+                setInterval("nowTimer()", 10);
+            }
+
+            /**
+             * if pause, change time memory and add this part to the list;
+             * if start, save beginning time.
+             */
+            function startOrPause(){
+                if (running){   // to pause
+                    running = false;
+                    
+                    var endTime = (new Date()).getTime();   // long, ms
+                    accumulation += endTime - lastTime;
+                    list.push([lastTime, endTime]);
+
+                    document.getElementById("list").innerHTML = formatTimeList();
+                }else{  // to start
+                    running = true;
+                    lastTime = (new Date()).getTime();      // long, ms
+                }
+            }
+
+            /**
+             * get the list into html text and display
+             */
+            function formatTimeList(){
+                var htmlList = "";
+                for(var i=0; i<list.length; i++){
+                    var beginTime = formatHmspTime(list[i][0]);
+                    var endTime = formatHmspTime(list[i][1]);
+                    var timeCost = getHmspFormat(list[i][1] - list[i][0]);
+                    var html = "<div id='line'>" +
+                        "<span id='listNumberBg'><span id='listNumber'>" + (i+1) + "</span></span>" +
+                        "<span id='beginTime'>" +
+                            "<span id='listBig'>" + beginTime[0] + "</span>" +
+                            "<span id='listSmall'>" + beginTime[1] + "</span>"
+                        + "</span>" +
+                        "<span id='endTime'>" +
+                            "<span id='listBig'>" + endTime[0] + "</span>" +
+                            "<span id='listSmall'>" + endTime[1] + "</span>"
+                        + "</span>" +
+                        "<span id='timeCost'>" +
+                            "<span id='listBig'>" + timeCost[0] + "</span>" +
+                            "<span id='listSmall'>" + timeCost[1] + "</span>"
+                        + "</span>"
+                        +"</div>";
+                    htmlList = html + htmlList;
+                }
+                return htmlList;
+            }
+
+            /**
+             * format ms time as "hour:minute:second.percentSecond",
+             * as time format, not more than 24 hours.
+             */
+            function formatHmspTime(timerTime){
+                var now = new Date(timerTime);
+
+                var hour = doubleChar(now.getHours());
+                var minute = doubleChar(now.getMinutes());
+                var second = doubleChar(now.getSeconds());
+
+                var percentSecond = doubleChar(parseInt((timerTime%1000)/10));
+                // var second = doubleChar(parseInt((timerTime%(1000*60))/1000));
+                // var minute = doubleChar(parseInt((timerTime%(1000*60*60))/(1000*60)));
+                // var hour = doubleChar(parseInt((timerTime%(1000*60*60*24))/(1000*60*60)));
+
+                return [hour+":"+minute+":"+second,percentSecond];
+            }
+
+            /**
+             * get timer now and then format,
+             * then write it into the timer div.
+             */
+            function nowTimer(){
+                if (running){
+                    var timerTime = getHmspFormat((new Date()).getTime() - lastTime + accumulation);
+                    document.getElementById("timerBig").innerText = timerTime[0];
+                    document.getElementById("timerSmall").innerText = timerTime[1];
+                }else{
+                    var timerTime = getHmspFormat(accumulation);
+                    document.getElementById("timerBig").innerText = timerTime[0];
+                    document.getElementById("timerSmall").innerText = timerTime[1];
+                }
+            }
+
+            /**
+             * format ms time as "hour:minute:second.percentSecond".
+             */
+            function getHmspFormat(timerTime){
+                var percentSecond = doubleChar(parseInt((timerTime%1000)/10));
+                var second = doubleChar(parseInt((timerTime%(1000*60))/1000));
+                var minute = doubleChar(parseInt((timerTime%(1000*60*60))/(1000*60)));
+                var hour = parseInt(timerTime/(1000*60*60));
+
+                return [hour+":"+minute+":"+second,percentSecond];
+            }
+
+            /**
+             * time to zero and clean all memories.
+             */
+            function restart(){
+                if (running){
+                    startOrPause(); // to pause
+                }
+                accumulation = 0;
+                list = [];
+                document.getElementById("list").innerHTML = "";
+            }
+
+            /**
+             * get time now and then format,
+             * then write it into the time div.
+             */
+            function nowTime(){
+                var now = new Date();
+                
+                var year = now.getFullYear();
+                var month = doubleChar(now.getMonth()+1);
+                var date = doubleChar(now.getDate());
+                var hour = doubleChar(now.getHours());
+                var minute = doubleChar(now.getMinutes());
+                var second = doubleChar(now.getSeconds());
+                
+                var timeLine = year+"-"+month+"-"+date+" "+hour+":"+minute+":"+second;
+                
+                document.getElementById("time").innerText = timeLine;
+            }
+            
+            /**
+             * format a single char to two chars,
+             * in order to make time in better format.
+             */
+            function doubleChar(input){
+                return (input < 10) ? ("0" + input) : input;
+            }
+
+            function shiftDark(){
+                if (darkTheme){ // turn light
+                    darkTheme = false;
+                }else{  // turn dark
+                    darkTheme = true;
+                }
+            }
+
+            /**
+             * change title as what is in the note,
+             * which might make it more convenient for finding this.
+             */
+            function changeTitle(){
+                document.title = document.getElementById("note").value;
+            }
+        </script>
+
+        <style type="text/css">
+
+            body{
+                background-color: #222;
+                margin: 0px;
+            }
+
+            #main{
+                height: 550px;
+                background-color: #333;
+                color: #ddd;
+                margin: auto;
+            }
+
+            #list{
+                color: #ddd;
+                margin: auto;
+                width: 65%;
+            }
+
+            #line{
+                border-bottom-width: 1px;
+                border-bottom-style: solid;
+                border-bottom-color: #999;
+                height: 50px;
+                display: flex;
+                align-items: center;
+                text-align: center;
+                margin: auto;
+            }
+
+            #beginTime{
+                padding: 10px;
+                width: 30%;
+            }
+
+            #endTime{
+                padding: 10px;
+                width: 30%;
+            }
+
+            #timeCost{
+                padding: 10px;
+                width: 30%;
+            }
+
+            #listBig{
+                font-size: 20px;
+            }
+
+            #listSmall{
+                font-size: 15px;
+                padding-left: 10px;
+            }
+
+            #listNumberBg{
+                width: 10%;
+                text-align: center;
+            }
+
+            #listNumber{
+                font-size: 18px;
+                font-weight: bolder;
+            }
+
+            #timer{
+                margin: auto;
+                text-align: center;
+            }
+
+            #timerBig{
+                font-size: 155px;
+            }
+
+            #timerSmall{
+                font-size: 65px;
+            }
+
+            #time{
+                font-size: 20px;
+                margin: auto;
+                text-align: center;
+            }
+
+            #buttonArea{
+                width: 65%;
+                margin: auto;
+            }
+
+            .control{
+                width: 45%;
+                height: 50px;
+                border-radius: 25px;
+                margin-top: 15px;
+                font-size: 25px;
+                color: #ddd;
+                border: 0px;
+
+                cursor: pointer;
+                
+            }
+
+            #startOrPause{
+                float: left;
+                background: linear-gradient(45deg, #1a4980, #1961c0);
+            }
+
+            #restart{
+                float: right;
+                background: linear-gradient(45deg, #2b6847, #2bbd6f);
+            }
+
+            #noteArea{
+                width: 65%;
+                margin: auto;
+                margin-top: 25px;
+            }
+
+            #note{
+                height: 45px;
+                width: 100%;
+                font-size: 25px;
+                text-align: center;
+                border-color: rgb(60, 159, 224);
+                border-style: solid;
+                border-width: 3px;
+                border-radius: 50px;
+                background-color: #333;
+                color: #ddd;
+            }
+            
+        </style>
+    </head>
+
+    <body>
+        <div id="main">
+            <div style="height: 105px"></div>
+            
+            <div id="timer">
+                <span id="timerBig"></span>
+                <span id="timerSmall"></span>
+            </div>
+            <div id="time"></div>
+
+            <div id="noteArea">
+                <input id="note" placeholder="Input your note here:" onchange="changeTitle()">
+            </div>
+            
+            <div id="buttonArea">
+                <button id="startOrPause" class="control" onclick="startOrPause()">START or PAUSE</button>
+                <button id="restart" class="control" onclick="restart()">RESTART</button>
+            </div>
+        </div>
+        <div id="list"></div>
+    </body>
+</html>
