@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf8">
+        <title>user agent test</title>
+
+        <script type="text/javascript">
+
+            // raw string of navigator.userAgent console log
+            var userAgentName = "";
+
+            // true: phone; false: computer; for judge function structure, init with false (computer).
+            var isPhone = false;
+            
+            // names of common mobile devices, iPad is reckoned as mobile devices and will be treated as phones
+            var mobileDeviceNames = ["Android", "iPhone", "iPod", "iPad"];
+
+            // judge once the web page loaded
+            onload = function(){
+                try{
+                    userAgentName = navigator.userAgent;
+                    judge();
+                } catch(e) {
+                    userAgentName = "I don't know...";
+                }
+                document.getElementById("info").innerText = userAgentName;
+                document.getElementById("judge").innerText = isPhone ? "Mobile Phone" : "Personal Computer" ;
+            }
+
+            // function to judge whether it is phone or computer
+            function judge(){
+                for (var i = 0; i < mobileDeviceNames.length; i++) {
+                    if (userAgentName.indexOf(mobileDeviceNames[i]) > -1) {
+                        isPhone = true;
+                    }
+                }
+            }
+        </script>
+        
+        <style type="text/css">
+            body{
+                margin: 0px;
+            }
+
+            #area-holder{
+                width: 100vw;
+                height: 100vh;
+                background-color: #444444;
+
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .info-title{
+                width: 60%;
+                color: #aaaaaa;
+                font-size: x-large;
+                font-weight: normal;
+                text-align: center;
+                margin: 10px;
+            }
+
+            #info-display{
+                width: 75%;
+                color: #dddddd;
+                font-size: xx-large;
+                font-weight: lighter;
+                text-align: center;
+                margin: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="area-holder">
+            <div class="info-title" id="info-title">Your device platform is:</div>
+            <div class="info-display" id="info"></div>
+            <div class="info-title" id="judge-title">You are now using:</div>
+            <div class="info-display" id="judge"></div>
+        </div>
+    </body>
+</html>
